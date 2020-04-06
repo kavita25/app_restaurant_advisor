@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">RestaurantAdvisor</string>
+    <string name="get_started">Find Restaurant</string>
+    <string name="title">Restaurant Advisor</string>
+    <string name="call_us"><u>Call us</u></string>
+    <string name="direction"><u>Direction</u></string>
+    <string name="website"><u>Website</u></string>
+    <string name="share"><u>Share</u></string>
+    <string name="list_empty">Please select correct Area or Pincode</string>
+    <string name="action_settings">Settings</string>
+
+
+</resources>
