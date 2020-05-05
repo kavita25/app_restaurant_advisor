@@ -1,5 +1,6 @@
 package com.restaurant.advisor.ui;
 
+import android.content.ComponentCallbacks2;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +9,7 @@ import android.widget.EditText;
 import com.restaurant.advisor.R;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class LandingScreen extends AppCompatActivity {
+public class LandingScreen extends AppCompatActivity implements ComponentCallbacks2 {
     private EditText mZipCode;
     private EditText mKeyword;
     @Override
@@ -28,5 +29,10 @@ public class LandingScreen extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
     }
 }

@@ -16,6 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -51,11 +53,25 @@ public class RestaurantSearchListFragment extends Fragment implements Restaurant
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         if (getArguments() != null) {
-            mQuery = getArguments().getString("pincode");
+            mQuery = getArguments().getString("zipcode");
             mOrder = getArguments().getString("keyword");
         }
-        networkManager = new RestaurantNetworkManager(getActivity(), this);
-        networkManager.sendQuery(mQuery, mOrder);
+        networkManager = ViewModelProviders.of(this).get(RestaurantNetworkManager.class);//new RestaurantNetworkManager(getActivity(), this);
+        MutableLiveData<com.restaurant.advisor.model.Response> response = networkManager.sendQuery(mQuery, mOrder);
+        response.observe(this, new Observer<Response>() {
+            @Override
+            public void onChanged(Response response) {
+                if (response != null && response.getRestaurants().size() > 0) {
+                    mListAdapter.setData(response.getRestaurants());
+                    mListAdapter.notifyDataSetChanged();
+                    mRView.setVisibility(View.VISIBLE);
+                    mEmptyView.setVisibility(View.GONE);
+                } else {
+                    mRView.setVisibility(View.INVISIBLE);
+                    mEmptyView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         setRetainInstance(true);
         super.onCreate(savedInstanceState);
 
@@ -108,26 +124,6 @@ public class RestaurantSearchListFragment extends Fragment implements Restaurant
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-    }
-
-    @Override
-    public void onResponseReceived(Response response) {
-        if (response != null && response.getRestaurants().size() > 0) {
-            mListAdapter.setData(response.getRestaurants());
-            mListAdapter.notifyDataSetChanged();
-            //mViewModel.insert(searchResultsDataModel.getRestaurants());
-
-            mRView.setVisibility(View.VISIBLE);
-            mEmptyView.setVisibility(View.GONE);
-        } else {
-            mRView.setVisibility(View.INVISIBLE);
-            mEmptyView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onRestauranDataReceived(Restaurant restaurant) {
-    //Nothing to do
     }
 
     @Override

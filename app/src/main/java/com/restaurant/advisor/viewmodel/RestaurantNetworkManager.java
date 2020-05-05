@@ -1,8 +1,13 @@
 package com.restaurant.advisor.viewmodel;
 
+import android.app.Application;
 import android.content.Context;
 import android.util.Log;
-import android.view.Menu;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -20,20 +25,20 @@ import com.restaurant.advisor.model.Restaurant;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RestaurantNetworkManager {
+public class RestaurantNetworkManager extends AndroidViewModel {
 
-    com.restaurant.advisor.model.Response mData;
-    Restaurant mRestaurant;
-    RestaurantListListner mListner;
+
+    MutableLiveData<com.restaurant.advisor.model.Response> mData = new MutableLiveData<>();;
+    MutableLiveData<com.restaurant.advisor.model.Restaurant> mRestaurant = new MutableLiveData<>();;
     Context mContext;
 
-    public RestaurantNetworkManager(Context application, RestaurantListListner listner) {
+    public RestaurantNetworkManager(@NonNull Application application) {
+        super(application);
         mContext = application;
-        mListner = listner;
 
     }
 
-    public com.restaurant.advisor.model.Response sendQuery(String pincode, String keyword) {
+    public MutableLiveData<com.restaurant.advisor.model.Response> sendQuery(String pincode, String keyword) {
 
         //
         // Check in db if not present then get from server
@@ -53,9 +58,8 @@ public class RestaurantNetworkManager {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-
                         com.restaurant.advisor.model.Response m = new Gson().fromJson(response, com.restaurant.advisor.model.Response.class);
-                        mListner.onResponseReceived(m);
+                        mData.setValue(m);
                         System.out.println(response);
                     }
                 }, new Response.ErrorListener() {
@@ -64,9 +68,8 @@ public class RestaurantNetworkManager {
                 Log.e("Volly Error", error.toString());
 
                 NetworkResponse networkResponse = error.networkResponse;
-                mListner.onError(error);
-                if(networkResponse != null)
-                Log.e("Status code", String.valueOf(networkResponse.statusCode));
+                if (networkResponse != null)
+                    Log.e("Status code", String.valueOf(networkResponse.statusCode));
             }
         }) {
             @Override
@@ -84,7 +87,7 @@ public class RestaurantNetworkManager {
     }
 
 
-    public com.restaurant.advisor.model.Restaurant getAdditionalData(String id) {
+    public MutableLiveData<com.restaurant.advisor.model.Restaurant> getAdditionalData(String id) {
         System.out.println("FROM SERVER==============================");
         System.out.println("ID " + id);
         RequestQueue queue = Volley.newRequestQueue(mContext.getApplicationContext());
@@ -96,8 +99,7 @@ public class RestaurantNetworkManager {
                     public void onResponse(String response) {
                         System.out.println("com.restaurant.advisor.model.Response :: getAdditionalData " + response);
                         com.restaurant.advisor.model.Restaurant m = new Gson().fromJson(response, com.restaurant.advisor.model.Restaurant.class);
-
-                        mListner.onRestauranDataReceived(m);
+                        mRestaurant.setValue(m);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -105,7 +107,6 @@ public class RestaurantNetworkManager {
                 Log.e("Volly Error", error.toString());
 
                 NetworkResponse networkResponse = error.networkResponse;
-                mListner.onError(error);
                 Log.e("Status code", String.valueOf(networkResponse.statusCode));
             }
         }) {

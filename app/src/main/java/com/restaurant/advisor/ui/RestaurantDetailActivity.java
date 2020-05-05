@@ -21,6 +21,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,8 +62,17 @@ public class RestaurantDetailActivity extends AppCompatActivity implements Resta
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         String resultJson = getIntent().getStringExtra("search_result");
         mResultData = new Gson().fromJson(resultJson, Restaurant.class);
-        networkManager = new RestaurantNetworkManager(this, this);
-        networkManager.getAdditionalData(mResultData.getId());
+        networkManager = ViewModelProviders.of(this).get(RestaurantNetworkManager.class);
+        MutableLiveData<Restaurant> restaurant = networkManager.getAdditionalData(mResultData.getId());
+        restaurant.observe(this, new Observer<Restaurant>() {
+            @Override
+            public void onChanged(Restaurant restaurant) {
+                if (restaurant != null) {
+                    setData(restaurant);
+                    mResultData = restaurant;
+                }
+            }
+        });
         setData(mResultData);
     }
 
@@ -237,21 +249,6 @@ public class RestaurantDetailActivity extends AppCompatActivity implements Resta
     protected void onStop() {
         super.onStop();
     }
-
-
-    @Override
-    public void onResponseReceived(Response response) {
-
-    }
-
-    @Override
-    public void onRestauranDataReceived(Restaurant restaurant) {
-        if (restaurant != null) {
-            setData(restaurant);
-            mResultData = restaurant;
-        }
-    }
-
     @Override
     public void onError(Exception e) {
         //Show Error
